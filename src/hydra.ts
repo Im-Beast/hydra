@@ -79,8 +79,9 @@ export class Hydra {
         const { url } = request;
 
         const patternResult = pattern.exec(url);
+        if (!patternResult) return;
 
-        const groups = patternResult?.pathname.groups as UrlPatternGroups<Route>;
+        const groups = patternResult.pathname.groups as UrlPatternGroups<Route>;
         request.groups = groups;
 
         const route = extractRouteFromUrl(url);
