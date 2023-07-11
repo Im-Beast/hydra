@@ -3,11 +3,13 @@
 import type { NormalOrPromiseLike } from "./types.ts";
 
 export type HydraResponseType = "unknown" | "string" | "response" | "json";
-export type HydraResponseByType<T extends HydraResponseType> = T extends "unknown" ? HydraResponse
-  : T extends "string" ? string
-  : T extends "response" ? Response
-  : T extends "json" ? Record<string | number, unknown>
-  : never;
+export type HydraResponseByType<T extends HydraResponseType> =
+  | (T extends "unknown" ? HydraResponse
+    : T extends "string" ? string
+    : T extends "response" ? Response
+    : T extends "json" ? Record<string | number, unknown>
+    : never)
+  | undefined;
 
 export type HydraResponse = NormalOrPromiseLike<
   | string
@@ -19,24 +21,24 @@ export type HydraResponse = NormalOrPromiseLike<
 export class HydraResponseUtils {
   static toType<T extends HydraResponseType, R = Promise<HydraResponseByType<T>>>(response: HydraResponse, type: T): R {
     switch (type) {
-      case "unknown":
-        return response as R;
       case "json":
         return HydraResponseUtils.toObject(response) as R;
       case "response":
         return HydraResponseUtils.toResponse(response) as R;
       case "string":
         return HydraResponseUtils.toString(response) as R;
+      default:
+        throw "Unknown response type";
     }
-
-    throw "unreachable";
   }
 
-  static async toString(response: HydraResponse): Promise<string> {
-    if (response === undefined) {
-      return "";
-    } else if (response instanceof Promise) {
+  static async toString(response: HydraResponse): Promise<string | undefined> {
+    if (response instanceof Promise) {
       response = await response;
+    }
+
+    if (response === undefined) {
+      return response;
     }
 
     if (typeof response === "string") {
@@ -48,15 +50,17 @@ export class HydraResponseUtils {
     return JSON.stringify(response);
   }
 
-  static async toObject(response: HydraResponse): Promise<Record<string | number, unknown>> {
-    if (response === undefined) {
-      return { data: undefined };
-    } else if (response instanceof Promise) {
+  static async toObject(response: HydraResponse): Promise<Record<string | number, unknown> | undefined> {
+    if (response instanceof Promise) {
       response = await response;
     }
 
+    if (response === undefined) {
+      return response;
+    }
+
+    let json: Record<string | number, unknown>;
     if (typeof response === "string") {
-      let json: Record<string | number, unknown>;
       try {
         json = JSON.parse(response);
       } catch {
@@ -64,17 +68,26 @@ export class HydraResponseUtils {
       }
       return json;
     } else if (response instanceof Response) {
-      return await response.json();
+      let text: string | null = null;
+      try {
+        text = await response.text();
+        json = JSON.parse(text);
+      } catch {
+        json = { data: text };
+      }
+      return json;
     }
 
     return response as Record<string | number, unknown>;
   }
 
-  static async toResponse(response: HydraResponse): Promise<Response> {
-    if (response === undefined) {
-      return new Response();
-    } else if (response instanceof Promise) {
+  static async toResponse(response: HydraResponse): Promise<Response | undefined> {
+    if (response instanceof Promise) {
       response = await response;
+    }
+
+    if (response === undefined) {
+      return undefined;
     }
 
     if (response instanceof Response) {
