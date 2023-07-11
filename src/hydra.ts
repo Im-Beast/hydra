@@ -1,17 +1,15 @@
 // Copyright 2023 Im-Beast. All rights reserved. MIT license.
 
-import { createReadyHandler, getPossibleRoutePaths } from "./handler.ts";
 import { HydraHandler } from "./handler.ts";
-import { HydraMiddleware } from "./middleware.ts";
-import { getContentType } from "./mime_types.ts";
 import { HydraRequest } from "./request.ts";
+import { getContentType } from "./mime_types.ts";
+import { HydraMiddleware } from "./middleware.ts";
 import { HydraResponseUtils } from "./response.ts";
-import { UrlPatternGroups } from "./url_pattern.ts";
-import { extractRouteFromUrl, isUrlPattern } from "./util.ts";
-
-
+import { createReadyHandler, getPossibleRoutePaths } from "./handler.ts";
 import { extractPatternShorthand, extractRouteFromUrl, isUrlPattern } from "./util.ts";
+
 import type { HTTPMethod } from "./types.ts";
+import type { UrlPatternGroups } from "./url_pattern.ts";
 
 export interface RouteCreator<Route extends string> {
   (route: Route, handler: HydraHandler<Route>, groups?: UrlPatternGroups<Route>): void;
