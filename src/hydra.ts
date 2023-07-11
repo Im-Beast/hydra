@@ -29,6 +29,7 @@ export class Hydra {
 
   middlewares: { [route: string]: [id: number, middleware: HydraMiddleware][] };
   patternMiddlewares: [id: number, middleware: HydraMiddleware, pattern: URLPattern][];
+  signal?: AbortSignal;
 
   constructor(hostname: string, port: number, options?: HydraOptions) {
     hostname = hostname.replace(/https?:\/\/(.+)/i, "$1");
@@ -36,6 +37,7 @@ export class Hydra {
 
     this.hostname = hostname;
     this.port = port;
+    this.signal = options?.signal;
 
     this.handlers = new Map();
     this.originalHandlers = new WeakMap();
@@ -190,7 +192,15 @@ export class Hydra {
       await this.staticFile(`${route}${entry.name}`, `${path}${entry.name}`, fileCache);
     }
 
-    if (!watchChanges) return;
+    if (!watchChanges) {
+      return;
+    }
+
+    const watcher = Deno.watchFs(path, { recursive: true });
+
+    this.signal?.addEventListener("abort", () => {
+      watcher.close();
+    });
 
     for await (const event of Deno.watchFs(path, { recursive: true })) {
       const [from, to] = event.paths as [string, string?];
@@ -277,7 +287,13 @@ export class Hydra {
       if (!data) return;
 
       // watch file changes
-      for await (const event of Deno.watchFs(filePath, { recursive: false })) {
+      const watcher = Deno.watchFs(filePath, { recursive: false });
+
+      this.signal?.addEventListener("abort", () => {
+        watcher.close();
+      });
+
+      for await (const event of watcher) {
         switch (event.kind) {
           case "modify":
           case "remove":
@@ -318,11 +334,12 @@ export class Hydra {
   }
 
   serve(): Promise<void> {
-    const { hostname, port } = this;
+    const { hostname, port, signal } = this;
 
     return Deno.serve({
       hostname,
       port,
+      signal,
     }, async (request) => {
       return await this.resolve(request) ?? errors.NotFound();
     }).finished;
