@@ -23,7 +23,7 @@ export type HydraMiddleware<Route extends string = any> = (
   request: HydraRequest<Route>,
   next: HydraMiddlewareNext,
   set: HydraMiddlewareSet,
-) => void;
+) => void | PromiseLike<void>;
 
 export function createMiddlewareHandler<Route extends string>(
   handler: HydraHandler<Route>,
