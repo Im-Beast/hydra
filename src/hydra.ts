@@ -177,8 +177,11 @@ export class Hydra {
     }
   }
 
-  async staticDir(route: string, path: string, watchChanges = true): Promise<void> {
-    const fileCache = new Map<string, Uint8Array>();
+  async staticDir(route: string, filePath: string, watchChanges?: boolean): Promise<void>;
+  async staticDir(route: string, filePath: string, fileCache: Map<string, Uint8Array>): Promise<void>;
+  async staticDir(route: string, path: string, data: Map<string, Uint8Array> | boolean = true): Promise<void> {
+    const fileCache = data instanceof Map ? data : new Map<string, Uint8Array>();
+    const watchChanges = data instanceof Map ? false : data;
 
     if (!path.endsWith("/")) path = path + "/";
     if (!route.endsWith("/")) route = route + "/";
@@ -186,10 +189,10 @@ export class Hydra {
 
     for await (const entry of Deno.readDir(path)) {
       if (entry.isDirectory) {
-        await this.staticDir(`${route}${entry.name}/`, `${path}${entry.name}/`);
+        await this.staticDir(`${route}${entry.name}/`, `${path}${entry.name}/`, fileCache);
+      } else {
+        await this.staticFile(`${route}${entry.name}`, `${path}${entry.name}`, fileCache);
       }
-
-      await this.staticFile(`${route}${entry.name}`, `${path}${entry.name}`, fileCache);
     }
 
     if (!watchChanges) {
@@ -202,7 +205,7 @@ export class Hydra {
       watcher.close();
     });
 
-    for await (const event of Deno.watchFs(path, { recursive: true })) {
+    for await (const event of watcher) {
       const [from, to] = event.paths as [string, string?];
 
       const fromName = from.slice(from.indexOf(path) + path.length);
@@ -213,7 +216,7 @@ export class Hydra {
         case "create": {
           const info = await Deno.stat(from);
           if (info.isDirectory) {
-            await this.staticDir(fromRoute, fromPath);
+            await this.staticDir(fromRoute, fromPath, fileCache);
           } else {
             await this.staticFile(fromRoute, fromPath, fileCache);
           }
