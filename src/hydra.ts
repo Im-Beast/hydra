@@ -15,6 +15,8 @@ export interface RouteCreator<Route extends string> {
   (route: Route, handler: HydraHandler<Route>, groups?: UrlPatternGroups<Route>): void;
 }
 
+// TODO: Getter setter to global context?
+// or even better, to each Hydra instance.
 export const errors = {
   NotFound: () => new Response("Not found", { status: 404 }),
 };
@@ -251,6 +253,7 @@ export class Hydra {
             cache = await Deno.readFile(filePath);
             data.set(filePath, cache);
           } catch {
+            // TODO: check for permissions etc
             return;
           }
         }
