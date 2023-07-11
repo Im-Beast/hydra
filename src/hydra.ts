@@ -30,10 +30,9 @@ export class Hydra {
   middlewares: { [route: string]: [id: number, middleware: HydraMiddleware][] };
   patternMiddlewares: [id: number, middleware: HydraMiddleware, pattern: URLPattern][];
 
-  constructor(hostname: string, port: number) {
-    if (hostname.endsWith("/")) {
-      hostname = hostname.slice(0, -1);
-    }
+  constructor(hostname: string, port: number, options?: HydraOptions) {
+    hostname = hostname.replace(/https?:\/\/(.+)/i, "$1");
+    if (hostname.endsWith("/")) hostname = hostname.slice(0, -1);
 
     this.hostname = hostname;
     this.port = port;
