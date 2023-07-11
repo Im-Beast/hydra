@@ -105,7 +105,7 @@ export class Hydra {
     const middlewareGroups: [number, HydraMiddleware, unknown?][] = this.middlewares[route] ??= [];
 
     for (const mw of this.patternMiddlewares) {
-      if (mw[2].test({ pathname: route })) {
+      if (middlewareGroups.indexOf(mw) === -1 && mw[2].test({ pathname: route })) {
         middlewareGroups.push(mw);
       }
     }
