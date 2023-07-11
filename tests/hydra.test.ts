@@ -1,3 +1,4 @@
+// Copyright 2023 Im-Beast. All rights reserved. MIT license.
 import { errors, HTTPMethod, Hydra } from "../mod.ts";
 import { assertEquals, move, walk } from "./deps.ts";
 

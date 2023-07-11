@@ -1,5 +1,6 @@
-import { UrlPatternGroups } from "../mod.ts";
+// Copyright 2023 Im-Beast. All rights reserved. MIT license.
 
+import { UrlPatternGroups } from "../mod.ts";
 import { AssertTrue, IsExact } from "./deps.ts";
 
 Deno.test("Types", async (t) => {
