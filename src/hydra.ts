@@ -9,6 +9,8 @@ import { HydraResponseUtils } from "./response.ts";
 import { UrlPatternGroups } from "./url_pattern.ts";
 import { extractRouteFromUrl, isUrlPattern } from "./util.ts";
 
+
+import { extractPatternShorthand, extractRouteFromUrl, isUrlPattern } from "./util.ts";
 import type { HTTPMethod } from "./types.ts";
 
 export interface RouteCreator<Route extends string> {
@@ -93,15 +95,7 @@ export class Hydra {
         return readyHandler(request);
       };
 
-      let wildcard = route.indexOf("*");
-      if (wildcard === -1) wildcard = route.length;
-      let namedGroup = route.indexOf(":");
-      if (namedGroup === -1) namedGroup = route.length;
-      let nonCapturingGroup = route.indexOf("{");
-      if (nonCapturingGroup === -1) nonCapturingGroup = route.length;
-
-      const shorthand = method.toUpperCase() + "/" +
-        route.slice(0, Math.min(wildcard, namedGroup, nonCapturingGroup) - 1);
+      const shorthand = extractPatternShorthand(method, route);
       patternHandlers[shorthand] ??= [];
       patternHandlers[shorthand].push(patternHandler);
 

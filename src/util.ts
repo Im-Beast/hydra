@@ -30,6 +30,22 @@ export function extractRouteFromUrl(url: string): string {
   return url.slice(url.indexOf("/", 8));
 }
 
+export function indexOfOrLength(string: string, searchString: string, position?: number): number {
+  const index = string.indexOf(searchString, position);
+  return index === -1 ? string.length : index;
+}
+
+export function extractPatternShorthand(method: string, route: string): string {
+  return method.toUpperCase() + route.slice(
+    0,
+    Math.min(
+      indexOfOrLength(route, "*"),
+      indexOfOrLength(route, ":"),
+      indexOfOrLength(route, "{"),
+    ) - 1,
+  );
+}
+
 /**
  * Promise that has `resolve` and `reject` functions as its methods.
  *
