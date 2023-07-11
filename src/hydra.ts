@@ -123,39 +123,31 @@ export class Hydra {
   }
 
   get<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("get", route, handler);
+    this.#routeCreator("GET", route, handler);
   }
 
   put<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("put", route, handler);
+    this.#routeCreator("PUT", route, handler);
   }
 
   post<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("post", route, handler);
+    this.#routeCreator("POST", route, handler);
   }
 
   head<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("head", route, handler);
-  }
-
-  trace<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("trace", route, handler);
+    this.#routeCreator("HEAD", route, handler);
   }
 
   patch<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("patch", route, handler);
+    this.#routeCreator("PATCH", route, handler);
   }
 
   delete<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("delete", route, handler);
-  }
-
-  connect<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("connect", route, handler);
+    this.#routeCreator("DELETE", route, handler);
   }
 
   options<Route extends string>(route: Route, handler: HydraHandler<Route>): void {
-    this.#routeCreator("options", route, handler);
+    this.#routeCreator("OPTIONS", route, handler);
   }
 
   #middlewareId = 0;
