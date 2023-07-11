@@ -21,6 +21,10 @@ export const errors = {
   NotFound: () => new Response("Not found", { status: 404 }),
 };
 
+export interface HydraOptions {
+  signal: AbortSignal;
+}
+
 export class Hydra {
   hostname: string;
   port: number;
@@ -294,7 +298,7 @@ export class Hydra {
     }
   }
 
-  resolve(request: Request): Response | undefined | Promise<Response | undefined> {
+  async resolve(request: Request): Promise<Response> {
     const { method, url } = request;
 
     let response = this.handlers.get(`${method}/${url}`)?.(request as HydraRequest);
@@ -302,25 +306,23 @@ export class Hydra {
     if (!response) {
       const { patternHandlers } = this;
 
-      let shorthand = `${method}/${extractRouteFromUrl(url)}`;
+      let shorthand = `${method}${extractRouteFromUrl(url)}`;
       let handlers: HydraHandler<string>[] = patternHandlers[shorthand];
       const maxLength = method.length + 1;
 
-      while (!handlers && shorthand.length !== maxLength) {
+      while (!handlers && shorthand.length > maxLength) {
         shorthand = shorthand.slice(0, shorthand.lastIndexOf("/"));
         handlers = patternHandlers[shorthand];
       }
 
-      if (!handlers) return;
-
-      for (const handler of handlers) {
-        if ((response ??= handler(request as HydraRequest))) break;
+      if (handlers) {
+        for (const handler of handlers) {
+          if ((response ??= handler(request as HydraRequest))) break;
+        }
       }
     }
 
-    if (response) {
-      return HydraResponseUtils.toResponse(response);
-    }
+    return await HydraResponseUtils.toResponse(response) ?? errors.NotFound();
   }
 
   serve(): Promise<void> {
@@ -330,8 +332,7 @@ export class Hydra {
       hostname,
       port,
       signal,
-    }, async (request) => {
-      return await this.resolve(request) ?? errors.NotFound();
-    }).finished;
+      // TODO: more options
+    }, this.resolve.bind(this)).finished;
   }
 }
