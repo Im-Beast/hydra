@@ -2,5 +2,9 @@
   "fmt": {
     "lineWidth": 120
   },
+  "tasks": {
+    "test": "deno test -A",
+    "coverage": "deno test -A --coverage=coverage && deno coverage --lcov --output=out.lcov coverage && genhtml -o coverage-html out.lcov && rm -r coverage/ && rm out.lcov"
+  },
   "lock": false
 }
