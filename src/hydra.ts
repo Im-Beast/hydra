@@ -9,7 +9,7 @@ import { HydraResponseUtils } from "./response.ts";
 import { UrlPatternGroups } from "./url_pattern.ts";
 import { extractRouteFromUrl, isUrlPattern } from "./util.ts";
 
-type HTTPMethod = "get" | "put" | "post" | "head" | "trace" | "patch" | "delete" | "connect" | "options";
+import type { HTTPMethod } from "./types.ts";
 
 export interface RouteCreator<Route extends string> {
   (route: Route, handler: HydraHandler<Route>, groups?: UrlPatternGroups<Route>): void;
