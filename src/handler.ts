@@ -10,7 +10,13 @@ export interface HydraHandler<Route extends string = any> {
   (request: HydraRequest<Route>): HydraResponse;
 }
 
-export function getPossibleRoutePaths(method: string, hostname: string, port: number, route: string): string[] {
+export function getPossibleRoutePaths(
+  method: string,
+  hostname: string,
+  port: number,
+  route: string,
+  forwarded = false,
+): string[] {
   const paths: string[] = [
     `${method}/${hostname}:${port}${route}`,
     `${method}/http://${hostname}:${port}${route}`,
@@ -26,6 +32,14 @@ export function getPossibleRoutePaths(method: string, hostname: string, port: nu
       `${method}/${hostname}${route}`,
       `${method}/https://${hostname}${route}`,
     );
+  }
+
+  if (!forwarded) {
+    if (hostname === "127.0.0.1") {
+      paths.push(...getPossibleRoutePaths(method, "localhost", port, route, true));
+    } else if (hostname === "localhost") {
+      paths.push(...getPossibleRoutePaths(method, "127.0.0.1", port, route, true));
+    }
   }
 
   return paths;
