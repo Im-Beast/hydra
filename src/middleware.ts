@@ -36,7 +36,12 @@ export function createMiddlewareHandler<Route extends string>(
 
     const next: HydraMiddlewareNext = (async (value?: HydraResponseType) => {
       await deferred;
-      return value ? HydraResponseUtils.toType(response, value) : response;
+
+      if (value) {
+        response = HydraResponseUtils.toType(response, value);
+      }
+
+      return response;
     }) as HydraMiddlewareNext;
 
     const set: HydraMiddlewareSet = (value) => {
